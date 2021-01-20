@@ -55,6 +55,7 @@ void InitUserdata()
         ini.SetBool("Window", "VSync", Engine.vsync = false);
         ini.SetInteger("Window", "WindowScale", Engine.windowScale = 2);
         ini.SetInteger("Window", "ScreenWidth", SCREEN_XSIZE = DEFAULT_SCREEN_XSIZE);
+        ini.SetInteger("Window", "ScreenHeight", SCREEN_YSIZE = SCREEN_YSIZE_MAX);
         ini.SetInteger("Window", "ScreenMode", SCREEN_MODE = 2);
         ini.SetInteger("Window", "RefreshRate", Engine.refreshRate = 60);
 
@@ -121,6 +122,8 @@ void InitUserdata()
             Engine.windowScale = 2;
         if (!ini.GetInteger("Window", "ScreenWidth", &SCREEN_XSIZE))
             SCREEN_XSIZE = DEFAULT_SCREEN_XSIZE;
+        if (!ini.GetInteger("Window", "ScreenHeight", &SCREEN_YSIZE))
+            SCREEN_YSIZE = SCREEN_YSIZE_MAX;
         if (!ini.GetInteger("Window", "ScreenMode", &SCREEN_MODE))
             SCREEN_MODE = 2;
         if (!ini.GetInteger("Window", "Refresh Rate", &Engine.refreshRate))
@@ -240,6 +243,8 @@ void writeSettings()
     ini.SetInteger("Window", "WindowScale", Engine.windowScale);
     ini.SetComment("Window", "SWComment", "How wide the base screen will be in pixels");
     ini.SetInteger("Window", "ScreenWidth", SCREEN_XSIZE);
+    ini.SetComment("Window", "SWComment", "How tall the base screen will be in pixels");
+    ini.SetInteger("Window", "ScreenHeight", SCREEN_YSIZE);
     ini.SetComment("Window", "SWComment", "How to scale the output if the resolution does not match with the screen");
     ini.SetInteger("Window", "ScreenMode", SCREEN_MODE);
     ini.SetComment("Window", "RRComment", "Determines the target FPS");

@@ -99,6 +99,24 @@ int InitRenderDevice()
 
     return 1;
 }
+
+void ResetRenderResolution()
+{
+    delete[] Engine.frameBuffer;
+    delete[] Engine.frameBuffer2x;
+    SDL_DestroyTexture(Engine.screenBuffer);
+    SDL_DestroyTexture(Engine.screenBuffer2x);
+
+    Engine.frameBuffer   = new ushort[SCREEN_XSIZE * SCREEN_YSIZE];
+    Engine.frameBuffer2x = new ushort[(SCREEN_XSIZE * 2) * (SCREEN_YSIZE * 2)];
+    Engine.screenBuffer = SDL_CreateTexture(Engine.renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, SCREEN_XSIZE, SCREEN_YSIZE);
+    Engine.screenBuffer2x =
+        SDL_CreateTexture(Engine.renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, SCREEN_XSIZE * 2, SCREEN_YSIZE * 2);
+
+    SDL_RenderSetLogicalSize(Engine.renderer, SCREEN_XSIZE, SCREEN_YSIZE);
+    SDL_SetWindowSize(Engine.window, SCREEN_XSIZE * Engine.windowScale, SCREEN_YSIZE * Engine.windowScale);
+}
+
 void RenderRenderDevice()
 {
 #if RETRO_USING_SDL

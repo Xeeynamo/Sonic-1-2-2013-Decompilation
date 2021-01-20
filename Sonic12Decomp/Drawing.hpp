@@ -46,6 +46,7 @@ extern GFXSurface gfxSurface[SURFACE_MAX];
 extern byte graphicData[GFXDATA_MAX];
 
 int InitRenderDevice();
+void ResetRenderResolution();
 void RenderRenderDevice();
 void ReleaseRenderDevice();
 

@@ -40,6 +40,7 @@ extern int SCREEN_XSIZE;
 extern int SCREEN_CENTERX;
 extern int SCREEN_YSIZE;
 extern int SCREEN_CENTERY;
+extern int SCREEN_MODE;
 
 extern DrawListEntry drawListEntries[DRAWLAYER_COUNT];
 
@@ -49,6 +50,7 @@ extern byte graphicData[GFXDATA_MAX];
 
 int InitRenderDevice();
 void ResetRenderResolution();
+void ResetScreenMode();
 void RenderRenderDevice();
 void ReleaseRenderDevice();
 

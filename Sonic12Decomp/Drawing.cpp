@@ -8,12 +8,14 @@ int SCREEN_XSIZE   = 424;
 int SCREEN_CENTERX = 424 / 2;
 int SCREEN_YSIZE   = 240;
 int SCREEN_CENTERY = 240 / 2;
+int SCREEN_MODE = 2;
 
 DrawListEntry drawListEntries[DRAWLAYER_COUNT];
 
 int gfxDataPosition;
 GFXSurface gfxSurface[SURFACE_MAX];
 byte graphicData[GFXDATA_MAX];
+SDL_Rect destScreenPos;
 
 int InitRenderDevice()
 {
@@ -82,6 +84,7 @@ int InitRenderDevice()
 
     SDL_SetWindowResizable(Engine.window, SDL_FALSE);
     SDL_SetWindowPosition(Engine.window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    ResetScreenMode();
 
     SDL_DisplayMode disp;
     if (SDL_GetDisplayMode(0, 0, &disp) == 0) {
@@ -115,19 +118,43 @@ void ResetRenderResolution()
     Engine.screenBuffer2x =
         SDL_CreateTexture(Engine.renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, SCREEN_XSIZE * 2, SCREEN_YSIZE * 2);
 
-    SDL_RenderSetLogicalSize(Engine.renderer, SCREEN_XSIZE, SCREEN_YSIZE);
-    SDL_SetWindowSize(Engine.window, SCREEN_XSIZE * Engine.windowScale, SCREEN_YSIZE * Engine.windowScale);
+    ResetScreenMode();
+}
+
+void ResetScreenMode()
+{
+    switch (SCREEN_MODE)
+    {
+        case 0:
+            destScreenPos.w = SCREEN_XSIZE;
+            destScreenPos.h = SCREEN_YSIZE;
+            destScreenPos.x = 0;
+            destScreenPos.y = 0;
+            SDL_RenderSetLogicalSize(Engine.renderer, SCREEN_XSIZE, SCREEN_YSIZE);
+            SDL_SetWindowSize(Engine.window, SCREEN_XSIZE * Engine.windowScale, SCREEN_YSIZE * Engine.windowScale);
+            break;
+        case 1:
+            destScreenPos.w = SCREEN_XSIZE * SCREEN_YSIZE_MAX / SCREEN_YSIZE;
+            destScreenPos.h = SCREEN_YSIZE;
+            destScreenPos.x = (DEFAULT_SCREEN_XSIZE - destScreenPos.w) / 2;
+            destScreenPos.y = 0;
+            SDL_RenderSetLogicalSize(Engine.renderer, DEFAULT_SCREEN_XSIZE, SCREEN_YSIZE);
+            SDL_SetWindowSize(Engine.window, DEFAULT_SCREEN_XSIZE * Engine.windowScale, SCREEN_YSIZE * Engine.windowScale);
+            break;
+        case 2:
+            destScreenPos.w = SCREEN_XSIZE;
+            destScreenPos.h = SCREEN_YSIZE;
+            destScreenPos.x = (DEFAULT_SCREEN_XSIZE - SCREEN_XSIZE) / 2;
+            destScreenPos.y = (SCREEN_YSIZE_MAX - SCREEN_YSIZE) / 2;
+            SDL_RenderSetLogicalSize(Engine.renderer, DEFAULT_SCREEN_XSIZE, SCREEN_YSIZE_MAX);
+            SDL_SetWindowSize(Engine.window, DEFAULT_SCREEN_XSIZE * Engine.windowScale, SCREEN_YSIZE_MAX * Engine.windowScale);
+            break;
+    }
 }
 
 void RenderRenderDevice()
 {
 #if RETRO_USING_SDL
-    SDL_Rect destScreenPos;
-    destScreenPos.x = 0;
-    destScreenPos.y = 0;
-    destScreenPos.w = SCREEN_XSIZE;
-    destScreenPos.h = SCREEN_YSIZE;
-
     int pitch = 0;
     SDL_SetRenderTarget(Engine.renderer, NULL); 
     

@@ -4,6 +4,8 @@ bool endLine = true;
 int touchTimer = 0;
 int taListStore = 0;
 
+const char *SettingScreenModes[] = { "Stretched", "Fit", "Centered" };
+
 void setupSettingsMenu()
 {
     char strBuffer[32];
@@ -14,6 +16,11 @@ void setupSettingsMenu()
     AddTextMenuEntry(&gameMenu[0], "SETTINGS");
 
     snprintf(strBuffer, sizeof(strBuffer), "RESOLUTION: %dx%d", SCREEN_XSIZE, SCREEN_YSIZE);
+    AddTextMenuEntry(&gameMenu[1], strBuffer);
+    AddTextMenuEntry(&gameMenu[1], "");
+
+    bool isNative = SCREEN_XSIZE == DEFAULT_SCREEN_XSIZE && SCREEN_YSIZE == SCREEN_YSIZE_MAX;
+    snprintf(strBuffer, sizeof(strBuffer), "SCREEN: %s", isNative ? "NATIVE" : SettingScreenModes[SCREEN_MODE]);
     AddTextMenuEntry(&gameMenu[1], strBuffer);
     AddTextMenuEntry(&gameMenu[1], "");
 
@@ -34,7 +41,8 @@ int getResolutionSettingId()
     return -1;
 }
 
-void setResolutionSettingId(int id) {
+void setResolutionSettingId(int id)
+{
     if (id < 0)
         id = 3;
     else if (id > 3)
@@ -62,6 +70,20 @@ void setResolutionSettingId(int id) {
     SCREEN_CENTERX = SCREEN_XSIZE / 2;
     SCREEN_CENTERY = SCREEN_YSIZE / 2;
     ResetRenderResolution();
+    writeSettings();
+}
+
+int getScreenMode() { return SCREEN_MODE; }
+
+void setScreenMode(int screenMode)
+{
+    if (screenMode < 0)
+        screenMode = 2;
+    else if (screenMode > 2)
+        screenMode = 0;
+
+    SCREEN_MODE = screenMode;
+    ResetScreenMode();
     writeSettings();
 }
 
@@ -1505,8 +1527,8 @@ void processStartMenu() {
                 if (keyPress.left || keyPress.right) {
                     int modifier = keyPress.left ? -1 : 1;
                     switch (gameMenu[1].selection1) {
-                        case 0: setResolutionSettingId(getResolutionSettingId() + modifier);
-                            break;
+                        case 0: setResolutionSettingId(getResolutionSettingId() + modifier); break;
+                        case 2: setScreenMode(getScreenMode() + modifier); break;
                     }
 
                     setupSettingsMenu();

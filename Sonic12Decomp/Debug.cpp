@@ -29,7 +29,7 @@ int getResolutionSettingId()
         return 1;
     if (SCREEN_XSIZE == 480 && SCREEN_YSIZE == 240)
         return 2;
-    if (SCREEN_XSIZE == 480 && SCREEN_YSIZE == 272)
+    if (SCREEN_XSIZE == 480 && SCREEN_YSIZE == SCREEN_YSIZE_MAX)
         return 3;
     return -1;
 }
@@ -41,13 +41,26 @@ void setResolutionSettingId(int id) {
         id = 0;
 
     switch (id) {
-        case 0: SCREEN_XSIZE = 320; break;
-        case 1: SCREEN_XSIZE = 424; break;
-        case 2: SCREEN_XSIZE = 480; break;
-        case 3: SCREEN_XSIZE = 480; break;
+        case 0:
+            SCREEN_XSIZE = 320;
+            SCREEN_YSIZE = 240;
+            break;
+        case 1:
+            SCREEN_XSIZE = 424;
+            SCREEN_YSIZE = 240;
+            break;
+        case 2:
+            SCREEN_XSIZE = 480;
+            SCREEN_YSIZE = 240;
+            break;
+        case 3:
+            SCREEN_XSIZE = 480;
+            SCREEN_YSIZE = SCREEN_YSIZE_MAX;
+            break;
     }
 
     SCREEN_CENTERX = SCREEN_XSIZE / 2;
+    SCREEN_CENTERY = SCREEN_YSIZE / 2;
     ResetRenderResolution();
     writeSettings();
 }

@@ -19,12 +19,12 @@ int projectionY = 160;
 int fogColour   = 0;
 int fogStrength = 0;
 
-int faceLineStart[SCREEN_YSIZE];
-int faceLineEnd[SCREEN_YSIZE];
-int faceLineStartU[SCREEN_YSIZE];
-int faceLineEndU[SCREEN_YSIZE];
-int faceLineStartV[SCREEN_YSIZE];
-int faceLineEndV[SCREEN_YSIZE];
+int faceLineStart[SCREEN_YSIZE_MAX];
+int faceLineEnd[SCREEN_YSIZE_MAX];
+int faceLineStartU[SCREEN_YSIZE_MAX];
+int faceLineEndU[SCREEN_YSIZE_MAX];
+int faceLineStartV[SCREEN_YSIZE_MAX];
+int faceLineEndV[SCREEN_YSIZE_MAX];
 
 void setIdentityMatrix(Matrix *matrix)
 {

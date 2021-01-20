@@ -66,12 +66,12 @@ extern int projectionY;
 extern int fogColour;
 extern int fogStrength;
 
-extern int faceLineStart[SCREEN_YSIZE];
-extern int faceLineEnd[SCREEN_YSIZE];
-extern int faceLineStartU[SCREEN_YSIZE];
-extern int faceLineEndU[SCREEN_YSIZE];
-extern int faceLineStartV[SCREEN_YSIZE];
-extern int faceLineEndV[SCREEN_YSIZE];
+extern int faceLineStart[SCREEN_YSIZE_MAX];
+extern int faceLineEnd[SCREEN_YSIZE_MAX];
+extern int faceLineStartU[SCREEN_YSIZE_MAX];
+extern int faceLineEndU[SCREEN_YSIZE_MAX];
+extern int faceLineStartV[SCREEN_YSIZE_MAX];
+extern int faceLineEndV[SCREEN_YSIZE_MAX];
 
 void setIdentityMatrix(Matrix *matrix);
 void matrixMultiply(Matrix *matrixA, Matrix *matrixB);

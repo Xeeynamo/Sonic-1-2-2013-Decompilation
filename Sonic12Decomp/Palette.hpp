@@ -16,7 +16,7 @@ extern ushort fullPalette[PALETTE_COUNT][PALETTE_SIZE];
 extern ushort *activePalette; // Ptr to the 256 colour set thats active
 extern PaletteEntry *activePalette32;
 
-extern byte gfxLineBuffer[SCREEN_YSIZE]; // Pointers to active palette
+extern byte gfxLineBuffer[SCREEN_YSIZE_MAX]; // Pointers to active palette
 
 extern int fadeMode;
 extern byte fadeA;
@@ -34,7 +34,7 @@ void LoadPalette(const char *filePath, int paletteID, int startPaletteIndex, int
 inline void SetActivePalette(byte newActivePal, int startLine, int endLine)
 {
     if (newActivePal < PALETTE_COUNT)
-        while (startLine++ < endLine) gfxLineBuffer[startLine % SCREEN_YSIZE] = newActivePal;
+        while (startLine++ < endLine) gfxLineBuffer[startLine % SCREEN_YSIZE_MAX] = newActivePal;
 
     activePalette   = fullPalette[gfxLineBuffer[0]];
     activePalette32 = fullPalette32[gfxLineBuffer[0]];

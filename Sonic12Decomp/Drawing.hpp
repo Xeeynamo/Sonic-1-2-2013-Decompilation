@@ -38,6 +38,8 @@ extern short tintLookupTable[TINTTABLE_SIZE];
 
 extern int SCREEN_XSIZE;
 extern int SCREEN_CENTERX;
+extern int SCREEN_YSIZE;
+extern int SCREEN_CENTERY;
 
 extern DrawListEntry drawListEntries[DRAWLAYER_COUNT];
 

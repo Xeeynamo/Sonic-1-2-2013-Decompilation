@@ -6,6 +6,8 @@ short tintLookupTable[TINTTABLE_SIZE];
 
 int SCREEN_XSIZE   = 424;
 int SCREEN_CENTERX = 424 / 2;
+int SCREEN_YSIZE   = 240;
+int SCREEN_CENTERY = 240 / 2;
 
 DrawListEntry drawListEntries[DRAWLAYER_COUNT];
 

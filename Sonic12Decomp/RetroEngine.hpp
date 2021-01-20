@@ -68,12 +68,12 @@ typedef unsigned int uint;
 #endif
 #define DEFAULT_SCREEN_XSIZE 480
 #define DEFAULT_FULLSCREEN   false
-#define SCREEN_YSIZE         (272)
+#define SCREEN_YSIZE_MAX     (272)
 #else
 #define BASE_PATH            ""
 #define DEFAULT_SCREEN_XSIZE 424
+#define SCREEN_YSIZE_MAX     (240)
 #define DEFAULT_FULLSCREEN   false
-#define SCREEN_YSIZE         (240)
 #define RETRO_USING_MOUSE
 #define RETRO_USING_TOUCH
 #endif
@@ -135,8 +135,6 @@ enum RetroGameType {
 };
 
 // General Defines
-#define SCREEN_CENTERY (SCREEN_YSIZE / 2)
-
 #if RETRO_PLATFORM == RETRO_WIN
 #include <SDL.h>
 #include <vorbis/vorbisfile.h>

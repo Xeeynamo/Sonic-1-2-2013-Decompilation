@@ -24,9 +24,7 @@ int InitRenderDevice()
     sprintf(gameTitle, "%s%s", Engine.gameWindowText, Engine.usingDataFile ? "" : " (Using Data Folder)");
 
     Engine.frameBuffer   = new ushort[SCREEN_XSIZE * SCREEN_YSIZE];
-    Engine.frameBuffer2x = new ushort[(SCREEN_XSIZE * 2) * (SCREEN_YSIZE * 2)];
     memset(Engine.frameBuffer, 0, (SCREEN_XSIZE * SCREEN_YSIZE) * sizeof(ushort));
-    memset(Engine.frameBuffer2x, 0, (SCREEN_XSIZE * 2) * (SCREEN_YSIZE * 2) * sizeof(ushort));
 
 #if RETRO_USING_SDL
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -56,14 +54,6 @@ int InitRenderDevice()
 
     if (!Engine.screenBuffer) {
         printLog("ERROR: failed to create screen buffer!\nerror msg: %s", SDL_GetError());
-        return 0;
-    }
-
-    Engine.screenBuffer2x =
-        SDL_CreateTexture(Engine.renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, SCREEN_XSIZE * 2, SCREEN_YSIZE * 2);
-
-    if (!Engine.screenBuffer2x) {
-        printLog("ERROR: failed to create screen buffer HQ!\nerror msg: %s", SDL_GetError());
         return 0;
     }
 
@@ -108,15 +98,10 @@ int InitRenderDevice()
 void ResetRenderResolution()
 {
     delete[] Engine.frameBuffer;
-    delete[] Engine.frameBuffer2x;
     SDL_DestroyTexture(Engine.screenBuffer);
-    SDL_DestroyTexture(Engine.screenBuffer2x);
 
     Engine.frameBuffer   = new ushort[SCREEN_XSIZE * SCREEN_YSIZE];
-    Engine.frameBuffer2x = new ushort[(SCREEN_XSIZE * 2) * (SCREEN_YSIZE * 2)];
     Engine.screenBuffer = SDL_CreateTexture(Engine.renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, SCREEN_XSIZE, SCREEN_YSIZE);
-    Engine.screenBuffer2x =
-        SDL_CreateTexture(Engine.renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, SCREEN_XSIZE * 2, SCREEN_YSIZE * 2);
 
     ResetScreenMode();
 }
@@ -163,56 +148,12 @@ void RenderRenderDevice()
     SDL_RenderClear(Engine.renderer);
 
     ushort *pixels = NULL;
-    
-    if (!drawStageGFXHQ) {
-        SDL_LockTexture(Engine.screenBuffer, NULL, (void **)&pixels, &pitch);
-        memcpy(pixels, Engine.frameBuffer, pitch * SCREEN_YSIZE);
-        SDL_UnlockTexture(Engine.screenBuffer);
 
-        SDL_RenderCopy(Engine.renderer, Engine.screenBuffer, NULL, &destScreenPos);
-    }
-    else {
-        int w = 0, h = 0;
-        SDL_QueryTexture(Engine.screenBuffer2x, NULL, NULL, &w, &h);
-        SDL_LockTexture(Engine.screenBuffer2x, NULL, (void **)&pixels, &pitch);
+    SDL_LockTexture(Engine.screenBuffer, NULL, (void **)&pixels, &pitch);
+    memcpy(pixels, Engine.frameBuffer, pitch * SCREEN_YSIZE);
+    SDL_UnlockTexture(Engine.screenBuffer);
 
-        ushort *framebufferPtr = Engine.frameBuffer;
-        for (int y = 0; y < (SCREEN_YSIZE / 2) + 12; ++y) {
-            for (int x = 0; x < SCREEN_XSIZE; ++x) {
-                *pixels = *framebufferPtr;
-                pixels++;
-                *pixels = *framebufferPtr;
-                pixels++;
-                framebufferPtr++;
-            }
-
-            framebufferPtr -= SCREEN_XSIZE;
-            for (int x = 0; x < SCREEN_XSIZE; ++x) {
-                *pixels = *framebufferPtr;
-                pixels++;
-                *pixels = *framebufferPtr;
-                pixels++;
-                framebufferPtr++;
-            }
-        }
-
-        framebufferPtr = Engine.frameBuffer2x;
-        for (int y = 0; y < ((SCREEN_YSIZE / 2) - 12) * 2; ++y) {
-            for (int x = 0; x < SCREEN_XSIZE; ++x) {
-                *pixels = *framebufferPtr;
-                framebufferPtr++;
-                pixels++;
-
-                *pixels = *framebufferPtr;
-                framebufferPtr++;
-                pixels++;
-            }
-        }
-
-        SDL_UnlockTexture(Engine.screenBuffer2x);
-        SDL_RenderCopy(Engine.renderer, Engine.screenBuffer2x, NULL, &destScreenPos);
-    }
-
+    SDL_RenderCopy(Engine.renderer, Engine.screenBuffer, NULL, &destScreenPos);
     SDL_RenderPresent(Engine.renderer);
 #endif
 }
@@ -274,41 +215,6 @@ void SetScreenSize(int width, int height)
     // SCREEN_SCROLL_UP   = (height / 2) - 8;
     // SCREEN_SCROLL_DOWN = (height / 2) + 8;
     // OBJECT_BORDER_Y2   = height + 0x100;
-}
-
-void CopyFrameOverlay2x()
-{
-    ushort *frameBuffer   = &Engine.frameBuffer[((SCREEN_YSIZE / 2) + 12) * SCREEN_XSIZE];
-    ushort *frameBuffer2x = Engine.frameBuffer2x;
-
-    for (int y = 0; y < (SCREEN_YSIZE / 2) - 12; ++y) {
-        for (int x = 0; x < SCREEN_XSIZE; ++x) {
-            if (*frameBuffer == 0xF81F) { // magenta
-                frameBuffer2x += 2;
-            }
-            else {
-                *frameBuffer2x = *frameBuffer;
-                frameBuffer2x++;
-                *frameBuffer2x = *frameBuffer;
-                frameBuffer2x++;
-            }
-            ++frameBuffer;
-        }
-
-        frameBuffer -= SCREEN_XSIZE;
-        for (int x = 0; x < SCREEN_XSIZE; ++x) {
-            if (*frameBuffer == 0xF81F) { // magenta
-                frameBuffer2x += 2;
-            }
-            else {
-                *frameBuffer2x = *frameBuffer;
-                frameBuffer2x++;
-                *frameBuffer2x = *frameBuffer;
-                frameBuffer2x++;
-            }
-            ++frameBuffer;
-        }
-    }
 }
 
 void DrawObjectList(int Layer)
@@ -469,17 +375,8 @@ void DrawStageGFX()
         DrawObjectList(6);
     }
 
-    if (drawStageGFXHQ) {
-        CopyFrameOverlay2x();
-        if (fadeMode > 0) {
-            DrawRectangle(0, 0, SCREEN_XSIZE, SCREEN_YSIZE, fadeR, fadeG, fadeB, fadeA);
-            SetFadeHQ(fadeR, fadeG, fadeB, fadeA);
-        }
-    }
-    else {
-        if (fadeMode > 0) {
-            DrawRectangle(0, 0, SCREEN_XSIZE, SCREEN_YSIZE, fadeR, fadeG, fadeB, fadeA);
-        }
+    if (fadeMode > 0) {
+        DrawRectangle(0, 0, SCREEN_XSIZE, SCREEN_YSIZE, fadeR, fadeG, fadeB, fadeA);
     }
 
     if (Engine.showPaletteOverlay) {
@@ -1584,9 +1481,7 @@ void Draw3DSkyLayer(int layerID)
     int sinValue           = sinValM7[layer->angle & 0x1FF];
     int cosValue           = cosValM7[layer->angle & 0x1FF];
     ushort *frameBufferPtr = &Engine.frameBuffer[((SCREEN_YSIZE / 2) + 12) * SCREEN_XSIZE];
-    ushort *bufferPtr      = Engine.frameBuffer2x;
-    if (!drawStageGFXHQ)
-        bufferPtr = &Engine.frameBuffer[((SCREEN_YSIZE / 2) + 12) * SCREEN_XSIZE];
+    ushort *bufferPtr = &Engine.frameBuffer[((SCREEN_YSIZE / 2) + 12) * SCREEN_XSIZE];
     byte *linePtr = &gfxLineBuffer[((SCREEN_YSIZE / 2) + 12)];
     int layerXPos = layer->XPos >> 4;
     int layerZPos = layer->ZPos >> 4;
@@ -1615,14 +1510,9 @@ void Draw3DSkyLayer(int layerID)
                     default: break;
                 }
 
-                if (*tilePixel > 0)
-                    *bufferPtr = activePalette[*tilePixel];
-                else if (drawStageGFXHQ)
-                    *bufferPtr = *frameBufferPtr;
+                *bufferPtr = activePalette[*tilePixel];
             }
-            else if (drawStageGFXHQ) {
-                *bufferPtr = *frameBufferPtr;
-            }
+
             if (lineBuffer & 1)
                 ++frameBufferPtr;
             if (drawStageGFXHQ) {
@@ -1701,47 +1591,6 @@ void DrawRectangle(int XPos, int YPos, int width, int height, int R, int G, int 
                 ++frameBufferPtr;
             }
             frameBufferPtr += pitch;
-        }
-    }
-#endif
-
-#if RETRO_RENDERTYPE == RETRO_HW_RENDER
-    // TODO: this
-#endif
-}
-
-void SetFadeHQ(int R, int G, int B, int A)
-{
-#if RETRO_RENDERTYPE == RETRO_SW_RENDER
-    if (A <= 0)
-        return;
-    if (A > 0xFF)
-        A = 0xFF;
-    int pitch              = SCREEN_XSIZE * 2;
-    ushort *frameBufferPtr = Engine.frameBuffer2x;
-    ushort clr             = RGB888_TO_RGB565(R, G, B);
-    if (A == 0xFF) {
-        int h = SCREEN_YSIZE;
-        while (h--) {
-            int w = pitch;
-            while (w--) {
-                *frameBufferPtr = clr;
-                ++frameBufferPtr;
-            }
-        }
-    }
-    else {
-        int h = SCREEN_YSIZE;
-        while (h--) {
-            int w = pitch;
-            while (w--) {
-                short *blendPtrB = &blendLookupTable[BLENDTABLE_XSIZE * (0xFF - A)];
-                short *blendPtrA = &blendLookupTable[BLENDTABLE_XSIZE * A];
-                *frameBufferPtr  = (blendPtrB[*frameBufferPtr & (BLENDTABLE_XSIZE - 1)] + blendPtrA[((byte)(B >> 3) | (byte)(32 * (G >> 2))) & 0x1F])
-                                  | ((blendPtrB[(*frameBufferPtr & 0x7E0) >> 6] + blendPtrA[(clr & 0x7E0) >> 6]) << 6)
-                                  | ((blendPtrB[(*frameBufferPtr & 0xF800) >> 11] + blendPtrA[(clr & 0xF800) >> 11]) << 11);
-                ++frameBufferPtr;
-            }
         }
     }
 #endif

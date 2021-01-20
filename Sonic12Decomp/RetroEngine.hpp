@@ -70,7 +70,7 @@ typedef unsigned int uint;
 #define DEFAULT_FULLSCREEN   false
 #define SCREEN_YSIZE_MAX     (272)
 #else
-#define BASE_PATH            ""
+#define BASE_PATH            "D:\\Games\\Sonic1\\"
 #define DEFAULT_SCREEN_XSIZE 424
 #define SCREEN_YSIZE_MAX     (240)
 #define DEFAULT_FULLSCREEN   false
@@ -253,7 +253,6 @@ public:
     byte gameType = GAME_UNKNOWN;
 
     ushort *frameBuffer   = nullptr;
-    ushort *frameBuffer2x = nullptr;
 
     bool isFullScreen = false;
 
@@ -273,7 +272,6 @@ public:
     SDL_Window *window          = nullptr;
     SDL_Renderer *renderer      = nullptr;
     SDL_Texture *screenBuffer   = nullptr;
-    SDL_Texture *screenBuffer2x = nullptr;
 
     SDL_Event sdlEvents;
 #endif

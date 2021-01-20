@@ -2,8 +2,55 @@
 
 bool endLine = true;
 int touchTimer = 0;
-
 int taListStore = 0;
+
+void setupSettingsMenu()
+{
+    char strBuffer[32];
+
+    SetupTextMenu(&gameMenu[0], 0);
+    SetupTextMenu(&gameMenu[1], 0);
+
+    AddTextMenuEntry(&gameMenu[0], "SETTINGS");
+
+    snprintf(strBuffer, sizeof(strBuffer), "RESOLUTION: %dx%d", SCREEN_XSIZE, SCREEN_YSIZE);
+    AddTextMenuEntry(&gameMenu[1], strBuffer);
+    AddTextMenuEntry(&gameMenu[1], "");
+
+    gameMenu[1].alignment      = 0;
+    gameMenu[1].selectionCount = 1;
+}
+
+int getResolutionSettingId()
+{
+    if (SCREEN_XSIZE == 320 && SCREEN_YSIZE == 240)
+        return 0;
+    if (SCREEN_XSIZE == 424 && SCREEN_YSIZE == 240)
+        return 1;
+    if (SCREEN_XSIZE == 480 && SCREEN_YSIZE == 240)
+        return 2;
+    if (SCREEN_XSIZE == 480 && SCREEN_YSIZE == 272)
+        return 3;
+    return -1;
+}
+
+void setResolutionSettingId(int id) {
+    if (id < 0)
+        id = 3;
+    else if (id > 3)
+        id = 0;
+
+    switch (id) {
+        case 0: SCREEN_XSIZE = 320; break;
+        case 1: SCREEN_XSIZE = 424; break;
+        case 2: SCREEN_XSIZE = 480; break;
+        case 3: SCREEN_XSIZE = 480; break;
+    }
+
+    SCREEN_CENTERX = SCREEN_XSIZE / 2;
+    ResetRenderResolution();
+    writeSettings();
+}
 
 void initDevMenu()
 {
@@ -560,6 +607,8 @@ void setTextMenu(int sm) {
             AddTextMenuEntry(&gameMenu[0], "ACHIEVEMENTS");
             AddTextMenuEntry(&gameMenu[0], " ");
             AddTextMenuEntry(&gameMenu[0], "LEADERBOARDS");
+            AddTextMenuEntry(&gameMenu[0], " ");
+            AddTextMenuEntry(&gameMenu[0], "SETTINGS");
             if (Engine.gameType == GAME_SONIC2) {
                 AddTextMenuEntry(&gameMenu[0], " ");
                 AddTextMenuEntry(&gameMenu[0], "2P VERSUS");
@@ -734,6 +783,8 @@ void setTextMenu(int sm) {
                 AddTextMenuEntry(&gameMenu[1], itemBoxTypes[GetGlobalVariableByName("options.shieldType")]);
             }
         }
+        case STARTMENU_SETTINGS: setupSettingsMenu();
+            break;
     }
 }
 
@@ -788,19 +839,19 @@ void processStartMenu() {
                 gameMenu[0].selection2 -= 2;
 
             if (Engine.gameType == GAME_SONIC2) {
+                if (gameMenu[0].selection2 > 19)
+                    gameMenu[0].selection2 = 9;
+                if (gameMenu[0].selection2 < 9)
+                    gameMenu[0].selection2 = 19;
+            }
+            else {
                 if (gameMenu[0].selection2 > 17)
                     gameMenu[0].selection2 = 9;
                 if (gameMenu[0].selection2 < 9)
                     gameMenu[0].selection2 = 17;
             }
-            else {
-                if (gameMenu[0].selection2 > 15)
-                    gameMenu[0].selection2 = 9;
-                if (gameMenu[0].selection2 < 9)
-                    gameMenu[0].selection2 = 15;
-            }
 
-            DrawTextMenu(&gameMenu[0], SCREEN_CENTERX, 72);
+            DrawTextMenu(&gameMenu[0], SCREEN_CENTERX, 64);
             if (keyPress.start || keyPress.A) {
                 if (gameMenu[0].selection2 == 9) {
                     setTextMenu(STARTMENU_SAVESEL);
@@ -813,6 +864,9 @@ void processStartMenu() {
                 }
                 else if (gameMenu[0].selection2 == 15) {
                     PlaySFXByName("Hurt", 0);
+                }
+                else if (gameMenu[0].selection2 == 17) {
+                    setTextMenu(STARTMENU_SETTINGS);
                 }
                 else {
                     PlaySFXByName("Hurt", 0);
@@ -1430,6 +1484,34 @@ void processStartMenu() {
                 initStartMenu(0);
             }
             break;
+            case STARTMENU_SETTINGS:
+                if (keyPress.down)
+                    gameMenu[1].selection1 += 2;
+                if (keyPress.up)
+                    gameMenu[1].selection1 -= 2;
+                if (keyPress.left || keyPress.right) {
+                    int modifier = keyPress.left ? -1 : 1;
+                    switch (gameMenu[1].selection1) {
+                        case 0: setResolutionSettingId(getResolutionSettingId() + modifier);
+                            break;
+                    }
+
+                    setupSettingsMenu();
+                }
+
+                if (gameMenu[1].selection1 > gameMenu[1].rowCount - 1)
+                    gameMenu[1].selection1 = 0;
+
+                if (gameMenu[1].selection1 < 0)
+                    gameMenu[1].selection1 = gameMenu[1].rowCount - 2;
+
+                DrawTextMenu(&gameMenu[0], SCREEN_CENTERX - 4, 80);
+                DrawTextMenu(&gameMenu[1], SCREEN_CENTERX - 96, 104);
+                if (keyPress.B) {
+                    initStartMenu(0);
+                }
+
+                break;
         }
         default: break;
     }
